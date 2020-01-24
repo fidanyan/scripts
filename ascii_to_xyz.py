@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 """ This script takes Phonopy normal modes in ascii format and returns animation as a XYZ file and a set of AIMS geometry files.
-    I took many functions from ascii-phonons/addons/vsim2blender/ascii_importer.py,
-    but got rid of Blender's mathutils (replaced them by numpy).
-    User should specify: 
+    I took ascii-related functions from 'ascii-phonons/addons/vsim2blender/ascii_importer.py',
+    but got rid of Blender's mathutils (replaced them by numpy operations).
+    A user should specify:
         - input file in Phonopy .ascii format
         - mode index
         - supercell matrix
@@ -13,10 +13,8 @@ n_frames = 20   # The number of frames for an animation
 
 import os, sys
 import numpy as np
-
-import re 
+import re
 from collections import namedtuple
-#from mathutils import Vector
 from ase import Atoms
 from ase.io import read, write
 
@@ -115,7 +113,7 @@ def import_vsim(filename):
         print("Reduced coordinates are not expected.")
         sys.exit()
         #positions = _reduced_to_cartesian(positions, cell_vsim)
-            
+
     return (cell_vsim, positions, symbols, vibs)
 
 
@@ -183,11 +181,11 @@ if __name__ == "__main__":
         for m in range(supercell_dims[1]):
             for n in range(supercell_dims[2]):
                 for a, pos in enumerate(positions):
-                    # add all lattice vectors with the corresponding supercell 
+                    # add all lattice vectors with the corresponding supercell
                     # coefficients to the unit cell positions:
                     pos_supercell.append(pos + np.dot(cell, np.asarray([l,m,n])))
                     symbols_supercell.append(symbols[a])
- 
+
     pos_supercell = np.asarray(pos_supercell)
     print("supercell:\t%i atoms" % len(pos_supercell))
     #for p in np.column_stack((symbols_supercell, pos_supercell)):
