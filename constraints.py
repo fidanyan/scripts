@@ -1,3 +1,8 @@
+"""
+    This is a .local/lib/python3.7/site-packages/ase/constraints.py
+    that I modified by myself to add FixGroupCom constraint (fix center of mass)
+    In case of OS reinstallation or change of a laptop, I can restore it from here.
+"""
 from __future__ import division
 from math import sqrt
 from warnings import warn
@@ -238,11 +243,10 @@ class FixCom(FixConstraint):
 
 
 class FixGroupCom(FixConstraint):
-    """Constraint class for fixing the center of mass of a subgroup,
-       enlisted in the same way as FixAtoms class does it.
-
+    """ (c) Karen Fidanyan, 2019
+        Constraint class for fixing the center of mass of a subgroup,
+        enlisted in the same way as FixAtoms class does it.
     """
-
     def __init__(self, indices=None, mask=None):
         """Constrain COM of chosen atoms.
 
@@ -294,21 +298,20 @@ class FixGroupCom(FixConstraint):
         m = atoms.get_masses()[self.index]
         warn("Center of mass will be incorrect with scaled coordinates.", Warning)
         # calculate center of mass:
-        old_cm = np.dot(m, atoms.arrays['positions'][self.index,:]) / m.sum()
-        #old_cm = self.get_group_com(self.index)
-        new_cm = np.dot(m, new[self.index,:]) / m.sum()
+        old_cm = np.dot(m, atoms.arrays['positions'][self.index, :]) / m.sum()
+        new_cm = np.dot(m, new[self.index, :]) / m.sum()
         d = np.empty_like(new)
-        d[self.index,:] = old_cm - new_cm
-        new[self.index,:] += d[self.index,:]
+        d[self.index, :] = old_cm - new_cm
+        new[self.index, :] += d[self.index, :]
 
     def adjust_forces(self, atoms, forces):
         m = atoms.get_masses()[self.index]
         mm = np.tile(m, (3, 1)).T
         lb = np.empty_like(forces)
-        lb[self.index,:] = np.sum(mm * forces[self.index,:], axis=0) / sum(m**2)
+        lb[self.index, :] = np.sum(mm * forces[self.index, :], axis=0) / sum(m**2)
         mfull = atoms.get_masses()
         mmfull = np.tile(mfull, (3, 1)).T
-        forces[self.index,:] -= (mmfull * lb)[self.index,:]
+        forces[self.index, :] -= (mmfull * lb)[self.index, :]
 
     def get_indices(self):
         return self.index
@@ -516,9 +519,9 @@ class FixLinearTriatomic(FixConstraint):
         r0 = old[self.n_ind] - old[self.m_ind]
         d0 = find_mic([r0], atoms.cell, atoms.pbc)[0][0]
         d1 = new_n - new_m - r0 + d0
-        a = np.einsum('ij,ij->i', d0, d0)
-        b = np.einsum('ij,ij->i', d1, d0)
-        c = np.einsum('ij,ij->i', d1, d1) - self.bondlengths_nm ** 2
+        a = np.einsum('ij, ij->i', d0, d0)
+        b = np.einsum('ij, ij->i', d1, d0)
+        c = np.einsum('ij, ij->i', d1, d1) - self.bondlengths_nm ** 2
         g = (b - (b**2 - a * c)**0.5) / (a * self.C3.sum(axis=1))
         g = g[:, None] * self.C3
         new_n -= g[:, 0, None] * d0
@@ -548,7 +551,7 @@ class FixLinearTriatomic(FixConstraint):
         d = old[self.n_ind] - old[self.m_ind]
         d = find_mic([d], atoms.cell, atoms.pbc)[0][0]
         dv = p_n / mass_nn - p_m / mass_mm
-        k = np.einsum('ij,ij->i', dv, d) / self.bondlengths_nm ** 2
+        k = np.einsum('ij, ij->i', dv, d) / self.bondlengths_nm ** 2
         k = self.C3 / (self.C3.sum(axis=1)[:, None]) * k[:, None]
         p_n -= k[:, 0, None] * mass_nn * d
         p_m += k[:, 1, None] * mass_mm * d
@@ -576,7 +579,7 @@ class FixLinearTriatomic(FixConstraint):
         d = old[self.n_ind] - old[self.m_ind]
         d = find_mic([d], atoms.cell, atoms.pbc)[0][0]
         df = fr_n - fr_m
-        k = -np.einsum('ij,ij->i', df, d) / self.bondlengths_nm ** 2
+        k = -np.einsum('ij, ij->i', df, d) / self.bondlengths_nm ** 2
         forces[self.n_ind] = fr_n + k[:, None] * d * A[:, 0, None]
         forces[self.m_ind] = fr_m - k[:, None] * d * A[:, 1, None]
         forces[self.o_ind] = fr_o + k[:, None] * d * B
@@ -1829,7 +1832,7 @@ class StrainFilter(Filter):
         The optional second argument, mask, is a list of six booleans,
         indicating which of the six independent components of the
         strain that are allowed to become non-zero.  It defaults to
-        [1,1,1,1,1,1].
+        [1, 1, 1, 1, 1, 1].
 
         """
 
@@ -2016,12 +2019,12 @@ class UnitCellFilter(Filter):
         if mask is None:
             mask = np.ones(6)
         mask = np.asarray(mask)
-        if mask.shape == (6,):
+        if mask.shape == (6, ):
             self.mask = voigt_6_to_full_3x3_stress(mask)
         elif mask.shape == (3, 3):
             self.mask = mask
         else:
-            raise ValueError('shape of mask should be (3,3) or (6,)')
+            raise ValueError('shape of mask should be (3, 3) or (6, )')
 
         if cell_factor is None:
             cell_factor = float(len(atoms))
@@ -2034,7 +2037,7 @@ class UnitCellFilter(Filter):
 
     def get_positions(self):
         '''
-        this returns an array with shape (natoms + 3,3).
+        this returns an array with shape (natoms + 3, 3).
 
         the first natoms rows are the positions of the atoms, the last
         three rows are the deformation tensor associated with the unit cell,
@@ -2049,7 +2052,7 @@ class UnitCellFilter(Filter):
 
     def set_positions(self, new, **kwargs):
         '''
-        new is an array with shape (natoms+3,3).
+        new is an array with shape (natoms+3, 3).
 
         the first natoms rows are the positions of the atoms, the last
         three rows are the deformation tensor used to change the cell shape.
@@ -2077,7 +2080,7 @@ class UnitCellFilter(Filter):
 
     def get_forces(self, apply_constraint=False):
         '''
-        returns an array with shape (natoms+3,3) of the atomic forces
+        returns an array with shape (natoms+3, 3) of the atomic forces
         and unit cell stresses.
 
         the first natoms rows are the forces on the atoms, the last
@@ -2211,7 +2214,7 @@ class ExpCellFilter(UnitCellFilter):
         V -> L(U, V).
 
         \phi( exp(U+tV) (z+tv) ) ~ \phi'(x) . (exp(U) v) + \phi'(x) . ( L(U, V) exp(-U) exp(U) z )
-           >>> \nabla E(U) : V  =  [S exp(-U)'] : L(U,V)
+           >>> \nabla E(U) : V  =  [S exp(-U)'] : L(U, V)
                                 =  L'(U, S exp(-U)') : V
                                 =  L(U', S exp(-U)') : V
                                 =  L(U, S exp(-U)) : V     (provided U = U')
@@ -2243,7 +2246,7 @@ class ExpCellFilter(UnitCellFilter):
         Filter.__init__(self, atoms, indices=range(len(atoms)))
         self.atoms = atoms
         self.deform_grad = np.eye(3)
-        self.deform_grad_log = np.zeros((3,3))
+        self.deform_grad_log = np.zeros((3, 3))
         self.atom_positions = atoms.get_positions()
         self.orig_cell = atoms.get_cell()
         self.stress = None
@@ -2251,12 +2254,12 @@ class ExpCellFilter(UnitCellFilter):
         if mask is None:
             mask = np.ones(6)
         mask = np.asarray(mask)
-        if mask.shape == (6,):
+        if mask.shape == (6, ):
             self.mask = voigt_6_to_full_3x3_stress(mask)
         elif mask.shape == (3, 3):
             self.mask = mask
         else:
-            raise ValueError('shape of mask should be (3,3) or (6,)')
+            raise ValueError('shape of mask should be (3, 3) or (6, )')
 
         if cell_factor is not None:
             warn("cell_factor is no longer used")
@@ -2268,7 +2271,7 @@ class ExpCellFilter(UnitCellFilter):
 
     def get_positions(self):
         '''
-        this returns an array with shape (natoms + 3,3).
+        this returns an array with shape (natoms + 3, 3).
 
         the first natoms rows are the positions of the atoms, the last
         three rows are the log of the deformation tensor associated with
@@ -2283,7 +2286,7 @@ class ExpCellFilter(UnitCellFilter):
 
     def set_positions(self, new, **kwargs):
         '''
-        new is an array with shape (natoms+3,3).
+        new is an array with shape (natoms+3, 3).
 
         the first natoms rows are the positions of the atoms, the last
         three rows are the deformation tensor used to change the cell shape.
@@ -2311,7 +2314,7 @@ class ExpCellFilter(UnitCellFilter):
 
     def get_forces(self, apply_constraint=False):
         '''
-        returns an array with shape (natoms+2,3) of the atomic forces
+        returns an array with shape (natoms+2, 3) of the atomic forces
         and unit cell stresses.
 
         the first natoms rows are the forces on the atoms, the last
@@ -2335,19 +2338,21 @@ class ExpCellFilter(UnitCellFilter):
             virial *= self.mask
 
         deform_grad_log_force_naive = virial.copy()
-        Y = np.zeros((6,6))
-        Y[0:3,0:3] = self.deform_grad_log
-        Y[3:6,3:6] = self.deform_grad_log
-        Y[0:3,3:6] = -np.dot(virial,expm(-self.deform_grad_log))
-        deform_grad_log_force = -expm(Y)[0:3,3:6]
-        for (i1,i2) in [(0,1),(0,2),(1,2)]:
-            ff = 0.5*(deform_grad_log_force[i1,i2] + deform_grad_log_force[i2,i1])
-            deform_grad_log_force[i1,i2] = ff
-            deform_grad_log_force[i2,i1] = ff
+        Y = np.zeros((6, 6))
+        Y[0:3, 0:3] = self.deform_grad_log
+        Y[3:6, 3:6] = self.deform_grad_log
+        Y[0:3, 3:6] = -np.dot(virial, expm(-self.deform_grad_log))
+        deform_grad_log_force = -expm(Y)[0:3, 3:6]
+        for (i1, i2) in [(0, 1), (0, 2), (1, 2)]:
+            ff = 0.5*(deform_grad_log_force[i1, i2]
+                      + deform_grad_log_force[i2, i1])
+            deform_grad_log_force[i1, i2] = ff
+            deform_grad_log_force[i2, i1] = ff
 
         # check for reasonable alignment between naive and exact search directions
-        if (np.sum(deform_grad_log_force*deform_grad_log_force_naive) /
-            np.sqrt(np.sum(deform_grad_log_force**2) * np.sum(deform_grad_log_force_naive**2)) > 0.8):
+        if (np.sum(deform_grad_log_force * deform_grad_log_force_naive)
+                / np.sqrt(np.sum(deform_grad_log_force**2)
+                          * np.sum(deform_grad_log_force_naive**2)) > 0.8):
             deform_grad_log_force = deform_grad_log_force_naive
 
         # Cauchy stress used for convergence testing
@@ -2355,10 +2360,13 @@ class ExpCellFilter(UnitCellFilter):
         if self.constant_volume:
             # apply constraint to force
             dglf_trace = deform_grad_log_force.trace()
-            np.fill_diagonal(deform_grad_log_force, np.diag(deform_grad_log_force) - dglf_trace / 3.0)
+            np.fill_diagonal(deform_grad_log_force,
+                             np.diag(deform_grad_log_force) - dglf_trace / 3.0)
             # apply constraint to Cauchy stress used for convergence testing
             ccs_trace = convergence_crit_stress.trace()
-            np.fill_diagonal(convergence_crit_stress, np.diag(convergence_crit_stress) - ccs_trace / 3.0)
+            np.fill_diagonal(convergence_crit_stress,
+                             np.diag(convergence_crit_stress)
+                             - ccs_trace / 3.0)
 
         # pack gradients into vector
         natoms = len(self.atoms)

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" This script calculates how interatomic distances change
+""" 02.10.2020 Karen Fidanyan
+    This script calculates how interatomic distances change
     along the phonon modes provided in xyz_jmol format.
 
     They can be used in distances formulation of DMD, which was implemented
@@ -27,8 +28,6 @@ def read_xyz_jmol(filename):
     file = open(filename, 'r')
     frames = []
     while(True):
-        attypes = []
-        pos = []
         nmode = []
         # Read the 1st XYZ line with number of atoms
         line = file.readline()
@@ -44,7 +43,7 @@ def read_xyz_jmol(filename):
         for i in range(nat):
             line = file.readline()
             line2 = line.split()
-            nmode.append(list(map(float,line2[4:7])))
+            nmode.append(list(map(float, line2[4:7])))
         nmode = np.array(nmode)
 
         frames.append((freq, nmode))
@@ -92,9 +91,11 @@ if __name__ == "__main__":
         prefac = float(sys.argv[3])  # Prefactor to make coupling small
     else:
         print("3 arguments needed:\n"
-              "\t- file with equilibrium geometry (any ASE-readable format that includes cell)\n"
+              "\t- file with equilibrium geometry "
+              "(any ASE-readable format that includes cell)\n"
               "\t  (units angstrom are expected)\n"
-              "\t- file with normal modes in xyz_jmol format, e.g. done by 'eigvec-to-xyz_jmol.py'\n"
+              "\t- file with normal modes in xyz_jmol format, "
+              "e.g. done by 'eigvec-to-xyz_jmol.py'\n"
               "\t  (normalized normal modes in Cartesian space are expected)\n"
               "\t- prefactor (typically 1e-3)\n"
               "We stop here.")
@@ -107,10 +108,10 @@ if __name__ == "__main__":
 
     orig_dists = []
     for i in range(len(atoms)):
-        (_ , rij) = vector_separation(cell,
-                                       invcell,
-                                       atoms.positions[i],
-                                       atoms.positions[:i])
+        (_, rij) = vector_separation(cell,
+                                     invcell,
+                                     atoms.positions[i],
+                                     atoms.positions[:i])
         orig_dists += list(rij)
     orig_dists = np.asarray(orig_dists)
 
@@ -126,10 +127,10 @@ if __name__ == "__main__":
 
         distlist = []
         for i in range(len(atoms)):
-            (_ , rij) = vector_separation(cell,
-                                           invcell,
-                                           disp_atoms.positions[i],
-                                           disp_atoms.positions[:i])
+            (_, rij) = vector_separation(cell,
+                                         invcell,
+                                         disp_atoms.positions[i],
+                                         disp_atoms.positions[:i])
             distlist += list(rij)
 
         diff = distlist - orig_dists
@@ -140,4 +141,8 @@ if __name__ == "__main__":
     dlists *= prefac      # coupling constant should be small
     data = np.column_stack((freqs, dlists))
     print(data)
-    np.savetxt("couplings-all.factor_%g.dat" % prefac, data, fmt='%g', header='Made by make-couplings-dmd.py\nFrequency (cm^-1), {constants}')
+    np.savetxt("couplings-all.factor_%g.dat" % prefac,
+               data,
+               fmt='%g',
+               header="Made by make-couplings-dmd.py\n"
+                      "Frequency (cm^-1), {constants}")
