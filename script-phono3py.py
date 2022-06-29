@@ -2,12 +2,11 @@
 """ This script takes geometry file (in any ASE-supported format)
     and performs Phono3py analysis: builds displacements and
     after they are calculated (outside of this script),
-    builds 3rd order force constant matrix
-    and calculates phonon self-energy gamma.
+    builds the 3rd order force constant matrix
+    and calculates phonon self-energy (gamma).
 
-    Naturally Phono3py stores data in hdf5 format, but here,
-    gammas and eigenfrequencies at each q-point
-    are extracted as a postpocessing.
+    Naturally, Phono3py stores data in hdf5 format,
+    but here gammas and eigenfrequencies at each q-point are extracted as a postpocessing.
 
     Adjustable parameters in the beginning of 'main' section:
     - infile = 'geometry.unitcell.in' - initial structure to analyze
@@ -17,14 +16,14 @@
     - symprec=1e-5       - symmetry precision. Not recommended to change it
 
     - cutoff_pair_distance = 6.0 - cutoff dist. for phonon-phonon interaction
-        Displacements involvind atoms beyond cutoff will be excluded.
+        Displacements involving atoms beyond cutoff will be excluded.
         It is recommended to start with lower values
         and increase it until convergence.
-        The disppacements are enumerated in a such way
+        The displacements are enumerated in such a way
         that adding further ones keeps previous valid,
         therefore one need only to calculate additional points.
 
-    For detailed description of output files see
+    For a detailed description of output files see
     https://atztogo.github.io/phono3py/output-files.html
 """
 
@@ -219,15 +218,11 @@ if __name__ == '__main__':
                 sys.exit(-1)
             force_sets.append(atoms.get_forces())
 
-#    print("force_sets:")
-#    print(force_sets)
     phono3py.produce_fc3(force_sets)
     # How grid_points are treated:
     # ~/.local/lib/python3.5/site-packages/phono3py/phonon3/conductivity.py
     phono3py.run_thermal_conductivity(temperatures=temperatures,
-                                      boundary_mfp=1e6,  # in micrometre
-                                      # solve_collective_phonon=False,
-                                      # use_ave_pp=False,
+                                      boundary_mfp=1e6,  # in micrometers
                                       # gamma_unit_conversion=None,
                                       # gv_delta_q=None,  # for group velocity
                                       write_gamma=True,
