@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-""" This script takes geometry file (in any ASE-supported format)
+"""This script takes geometry file in any ASE-supported format
     and performs Phono3py analysis: builds displacements and
     after they are calculated (outside of this script),
     builds the 3rd order force constant matrix
@@ -25,6 +25,29 @@
 
     For a detailed description of output files see
     https://atztogo.github.io/phono3py/output-files.html
+
+
+    Copyright (c) Karen Fidanyan 2020, under the terms of the MIT license.
+    Includes copyrighted pieces from the FHI-vibes project
+    (also MIT license, see here: https://vibes-developers.gitlab.io/vibes/license/)
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
 """
 
 import os
@@ -36,7 +59,9 @@ from phono3py import Phono3py
 
 
 def to_phonopy_atoms(structure, wrap=False):
-    """ (c) Florian Knoop, Hilde project (a.k.a. FHI-vibes)
+    """ (c) Florian Knoop, FHI-vibes project
+    MIT License https://vibes-developers.gitlab.io/vibes/license/
+
     Converts ase.atoms.Atoms to PhonopyAtoms
     Parameters:
     structure: ase.atoms.Atoms  - Atoms to convert
@@ -57,7 +82,9 @@ def to_phonopy_atoms(structure, wrap=False):
 
 
 def to_Atoms(structure, info=None, pbc=True):
-    """ (c) Florian Knoop, Hilde project (a.k.a. FHI-vibes)
+    """ (c) Florian Knoop, FHI-vibes project
+    MIT License https://vibes-developers.gitlab.io/vibes/license/
+
     Convert structure to ase.atoms.Atoms
     Parameters:
     structure: PhonopyAtoms  - The structure to convert
